@@ -8,6 +8,7 @@
     <Authors>Me</Authors>
     <Description>Template for ShellScriptContext.</Description>
     <PackageTags>dotnet-new;templates;console;script;shell;context;log;logging</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <TargetFramework>net6.0</TargetFramework>
 
