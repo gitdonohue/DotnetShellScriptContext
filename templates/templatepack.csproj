@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>0.0.1</PackageVersion>
+    <PackageId>ShellScriptContext.Template</PackageId>
+    <Title>ShellScriptContext Template (dotnetscript)</Title>
+    <Authors>Me</Authors>
+    <Description>Template for ShellScriptContext.</Description>
+    <PackageTags>dotnet-new;templates;console;script;shell;context;log;logging</PackageTags>
+
+    <TargetFramework>net6.0</TargetFramework>
+
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="dotnetscript\**\*" Exclude="dotnetscript\**\bin\**;dotnetscript\**\obj\**" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>
