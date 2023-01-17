@@ -13,85 +13,15 @@ Console.WriteLine("Press Ctrl+C to cancel.");
 
 try
 {
+
     //////////////////////////////////////////////////////////////////////////////////////////
     //
     // Your script code here
     //
     //////////////////////////////////////////////////////////////////////////////////////////
-
-    if (scriptContext.Arguments.RunTests)
+    using (scriptContext.BeginScope("test"))
     {
-        // Example script logic
-        using (scriptContext.BeginScope("Example"))
-        {
-            for (int i = 0; i < 6; ++i)
-            {
-                using (scriptContext.BeginScope($"step{i}"))
-                {
-                    Console.WriteLine($"Test step {i}.");
-                    await Task.Delay(1000, scriptContext.CancellationToken);
-                }
-
-            }
-        }
-
-        // Example for parallel tasks
-        using (scriptContext.BeginScope("Parallel"))
-        {
-            var task1 = async () =>
-            {
-                using (scriptContext.BeginScope("task1"))
-                {
-                    for (int i = 0; i < 6; ++i)
-                    {
-                        using (scriptContext.BeginScope($"step{i}"))
-                        {
-                            Console.WriteLine($"task1_step{i}.");
-                            if (i == 2)
-                            {
-                                scriptContext.LogCritical("Ouch!");
-                                throw new Exception("Forced failure test");
-                            }
-                            await Task.Delay(1000, scriptContext.CancellationToken);
-                        }
-                    }
-                }
-            };
-
-            var task2 = async () =>
-            {
-                using (scriptContext.BeginScope("task2"))
-                {
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        using (scriptContext.BeginScope($"step{i}"))
-                        {
-                            Console.WriteLine($"task2_step{i}.");
-                            await Task.Delay(1200, scriptContext.CancellationToken);
-                        }
-
-                    }
-                }
-            };
-
-            var task3 = async () =>
-            {
-                using (scriptContext.BeginScope("task3"))
-                {
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        using (scriptContext.BeginScope($"step{i}"))
-                        {
-                            Console.WriteLine($"task3_step{i}.");
-                            await Task.Delay(1300, scriptContext.CancellationToken);
-                        }
-
-                    }
-                }
-            };
-
-            await scriptContext.RunTasks(task1, task2, task3);
-        }
+        await Task.Delay(1000,scriptContext.CancellationToken);
     }
 }
 catch (OperationCanceledException)
@@ -120,8 +50,6 @@ Console.WriteLine("dotnetscript Finished.");
 
 class ScriptArguments : DefaultScriptArguments
 {
-    [CommandLine.Option('x', "test", Required = false, HelpText = "Run test.")] public bool RunTests { get; set; }
-
     //
     // The following options are defined by default:
     //

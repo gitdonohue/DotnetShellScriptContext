@@ -1,5 +1,8 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CliWrap;
 using CommandLine;
 using Microsoft.Extensions.Logging;
@@ -41,6 +44,21 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
         var scriptArguments = CommandLine.Parser.Default.ParseArguments<TScriptArguments>(args)
             .WithNotParsed((err) => throw new ArgumentException());
         Arguments = scriptArguments.Value;
+
+        var jj = System.Net.WebUtility.UrlEncode(JsonSerializer.Serialize(Arguments));
+        if (Arguments.JsonArguments != string.Empty)
+        {
+            var jsonString = System.Net.WebUtility.UrlDecode(Arguments.JsonArguments);
+            var jsonArgs = JsonSerializer.Deserialize<TScriptArguments>(jsonString);
+            if (jsonArgs != null)
+            {
+                Arguments = jsonArgs;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid json arguments: {jsonArgs}");
+            }
+        }
 
         _logLevel = Arguments.Quiet ? LogLevel.Critical 
             : (Arguments.Verbose ? LogLevel.Trace : LogLevel.Information);
@@ -359,4 +377,7 @@ public class DefaultScriptArguments
 
     [CommandLine.Option('p', "pause", Required = false, HelpText = "Pause at end of script.")]
     public bool Pause { get; set; }
+
+    [CommandLine.Option("json",Required = false, HelpText = "Pass arguments as a json string (urlencoded)")]
+    public string JsonArguments { get; set; } = string.Empty;
 }

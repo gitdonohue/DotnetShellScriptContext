@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageType>Template</PackageType>
-    <PackageVersion>0.0.2</PackageVersion>
+    <PackageVersion>0.0.3</PackageVersion>
     <PackageId>ShellScriptContext.Template</PackageId>
     <Title>ShellScriptContext Template (dotnetscript)</Title>
     <Authors>Me</Authors>
