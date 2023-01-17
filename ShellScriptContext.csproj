@@ -12,7 +12,7 @@
     <RepositoryUrl>https://github.com/gitdonohue/DotnetShellScriptContext</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>console;script;shell;context;log;logging</PackageTags>
-    <Version>0.0.1.0</Version>
+    <Version>0.0.2.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 

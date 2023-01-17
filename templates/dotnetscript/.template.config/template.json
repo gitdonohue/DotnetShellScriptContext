@@ -15,7 +15,7 @@
     {
       "modifiers": [
         {
-          "exclude": [ ".vs/**", ".git/**", ".bin/**", ".obj/**", "install_template.bat", "templatepack.csproj" ]
+          "exclude": [ ".vs/**", ".git/**", ".bin/**", ".obj/**", "install_template.bat", "templatepack.csproj", "dotnetscript_dev.csproj", "dotnetscript_dev.sln" ]
         }
       ]
     }

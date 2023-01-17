@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace ShellScriptContext;
 
 public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
+    where TScriptArguments : DefaultScriptArguments
 {
     public CancellationToken CancellationToken => _cts.Token;
     public bool IsCancellationRequested => CancellationToken.IsCancellationRequested;
@@ -20,6 +21,7 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
     private AsyncLocalContextStack _scopes = new();
     private bool UseLocalScopes => true;
 
+    private LogLevel _logLevel { get; init; }
     private TextWriter ConsoleStdout { get; init; }
     private TextWriter ConsoleStderr { get; init; }
 
@@ -40,27 +42,31 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
             .WithNotParsed((err) => throw new ArgumentException());
         Arguments = scriptArguments.Value;
 
+        _logLevel = Arguments.Quiet ? LogLevel.Critical 
+            : (Arguments.Verbose ? LogLevel.Trace : LogLevel.Information);
+        
+        // Note: When UseLocalScopes is true, we don't use M$'s logging solution.
         _loggerFactory = LoggerFactory.Create(builder =>
         {
-            builder.AddFilter(name, LogLevel.Debug)
+            builder.AddFilter(name, _logLevel)
                 .AddSimpleConsole(options =>
                 {
-                    options.IncludeScopes = true;
-                    options.TimestampFormat = "HH:mm:ss:fff ";
+                    options.IncludeScopes = Arguments.Scopes;
+                    options.TimestampFormat = Arguments.Times ? "HH:mm:ss:fff " : string.Empty;
                     options.SingleLine = true;
                 });
         });
         _logger = _loggerFactory.CreateLogger(name);
 
         _cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (s, e) => { _cts.Cancel(); e.Cancel = true; Environment.ExitCode = -1; };
+        Console.CancelKeyPress += (s, e) => { e.Cancel = true; _cts.Cancel(); Environment.ExitCode = -1; };
 
         ConsoleStdout = Console.Out;
         ConsoleStderr = Console.Error;
         Console.SetOut(new TextWriterFromILogger(this, LogLevel.Information));
         Console.SetError(new TextWriterFromILogger(this, LogLevel.Error));
 
-        if (UseLocalScopes)
+        if (UseLocalScopes && Arguments.ScopeTimings)
         {
             _scopes.ContextPushed += (ctx, stack) =>
             {
@@ -71,11 +77,6 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
             {
                 this.LogDebug($"Context stopped: {ctx.Name} Duration: {ctx.Lifetime.ToString(@"mm\:ss\:fff")}");
             };
-
-            //_scopes.AsyncContextChanged += (previous, current, threadChanged) =>
-            //{
-            //    this.LogTrace($"{previous?.FirstOrDefault()?.Name} => {current?.FirstOrDefault()?.Name} [threadchange:{threadChanged}]");
-            //};
         }
     }
 
@@ -84,6 +85,14 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
         _cts.Cancel();
         _loggerFactory?.Dispose();
         Console.ResetColor();
+        Console.SetOut(ConsoleStdout);
+        Console.SetError(ConsoleStderr);
+
+        if (Arguments.Pause)
+        {
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
+        }
     }
 
     public void Exit(int returnCode)
@@ -175,7 +184,7 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
         }
         catch (TaskCanceledException)
         {
-            this.LogWarning("Cancelled");
+            this.LogWarning("Task Cancelled");
         }
     }
 
@@ -191,14 +200,21 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
     {
         if (UseLocalScopes)
         {
+            if (logLevel < _logLevel) return;
+
             TextWriter consoleWriter = (logLevel >= LogLevel.Error) ? ConsoleStderr : ConsoleStdout;
             string msg = state!.ToString() ?? "";
             msg = msg.TrimEnd();
 
-            var timeFmt = $"{DateTime.Now.ToString("HH:mm:ss:fff")} ";
+            var timeFmt = Arguments.Times ? $"{DateTime.Now.ToString("HH:mm:ss:fff")} " : string.Empty;
 
-            var scopes = string.Join('|', _scopes.GetStackNames().Reverse());
-            var scopesFmt = (scopes.Length > 0) ? $"[{scopes}] " : string.Empty;
+            string scopesFmt = "";
+            if (Arguments.Scopes)
+            {
+                var scopesStack = _scopes.GetStackNames().Reverse();
+                var scopes = string.Join('|', scopesStack);
+                scopesFmt = (scopes.Length > 0) ? $"[{scopes}] " : string.Empty;
+            }
 
             ConsoleColor currentBackground = Console.BackgroundColor;
             ConsoleColor currentForeground = Console.ForegroundColor;
@@ -322,4 +338,25 @@ internal sealed class AsyncLocalContextStack
 
     public IEnumerable<StackContext> GetStack() => _asyncLocalStack.Value ?? Enumerable.Empty<StackContext>();
     public IEnumerable<string> GetStackNames() => GetStack().Select(x => x.Name);
+}
+
+public class DefaultScriptArguments
+{
+    [CommandLine.Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
+    public bool Verbose { get; set; }
+
+    [CommandLine.Option('q', "quiet", Required = false, HelpText = "Inhibit all output.")]
+    public bool Quiet { get; set; }
+
+    [CommandLine.Option('s', "scopes", Required = false, HelpText = "Show context scopes.")]
+    public bool Scopes { get; set; }
+
+    [CommandLine.Option('S', "scopetimings", Required = false, HelpText = "Show context scope timings.")]
+    public bool ScopeTimings { get; set; }
+
+    [CommandLine.Option('t', "timestamps", Required = false, HelpText = "Show log times.")]
+    public bool Times { get; set; }
+
+    [CommandLine.Option('p', "pause", Required = false, HelpText = "Pause at end of script.")]
+    public bool Pause { get; set; }
 }
