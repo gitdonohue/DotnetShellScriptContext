@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "dotnetscript_dev": {
+      "commandName": "Project",
+      "commandLineArgs": "--verbose --timestamps --scopes --scopetimings"
+    }
+  }
+}
