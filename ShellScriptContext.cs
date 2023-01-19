@@ -16,6 +16,16 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
     public bool IsCancellationRequested => CancellationToken.IsCancellationRequested;
     public TScriptArguments Arguments { get; init; }
 
+    public static Dictionary<LogLevel, ConsoleColor> ConsoleColorsMap = new()
+    {
+        { LogLevel.Trace, ConsoleColor.Blue },
+        { LogLevel.Debug, ConsoleColor.Green },
+        { LogLevel.Information, ConsoleColor.Gray },
+        { LogLevel.Warning, ConsoleColor.Yellow },
+        { LogLevel.Error, ConsoleColor.Red },
+        { LogLevel.Critical, ConsoleColor.Red },
+        { LogLevel.None, ConsoleColor.White },
+    };
 
     private ILoggerFactory _loggerFactory;
     private ILogger _logger { get; init; }
@@ -27,17 +37,6 @@ public sealed class ScriptContext<TScriptArguments> : IDisposable, ILogger
     private LogLevel _logLevel { get; init; }
     private TextWriter ConsoleStdout { get; init; }
     private TextWriter ConsoleStderr { get; init; }
-
-    private static Dictionary<LogLevel, ConsoleColor> ConsoleColorsMap = new()
-    {
-        { LogLevel.Trace, ConsoleColor.Blue },
-        { LogLevel.Debug, ConsoleColor.Green },
-        { LogLevel.Information, ConsoleColor.Gray },
-        { LogLevel.Warning, ConsoleColor.Yellow },
-        { LogLevel.Error, ConsoleColor.Red },
-        { LogLevel.Critical, ConsoleColor.Red },
-        { LogLevel.None, ConsoleColor.White },
-    };
 
     public ScriptContext(string name, IEnumerable<string> args)
     {
