@@ -42,6 +42,27 @@ scriptContext.LogError("This is fine.");
 ## Arguments
 The ScriptContext is created with a arguments class, which must inherit from DefaultScriptArguments. Under the hood it uses the CommandLineParser package (https://github.com/commandlineparser/commandline).  The arguments are made available through the Arguments property of the ScriptContext.
 
+The following arguments are provided by default:
+```
+  -v, --verbose         Set output to verbose messages.
+
+  -q, --quiet           Inhibit all output.
+
+  -s, --scopes          Show context scopes.
+
+  -S, --scopetimings    Show context scope timings.
+
+  -t, --timestamps      Show log times.
+
+  -p, --pause           Pause at end of script.
+
+  --json                Pass arguments as a json string (urlencoded)
+
+  --help                Display this help screen.
+
+  --version             Display version information.
+```
+
 ## Cancellation
 The ScriptContext handles Ctrl+C break events, and exposes the CancellationToken property, which should be used to terminate any ongoing work.  This token should be passed to any async calls, and it should be polled in non-async loops to exit as soon as possible.  The ScriptContext also exposes an Exit() method, for graceful termination.
 
