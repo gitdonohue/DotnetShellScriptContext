@@ -17,7 +17,7 @@ The Nuget package (https://www.nuget.org/packages/ShellScriptContext/) can be in
 ```
 dotnet add package ShellScriptContext
 ```
-But the preferred way to us it is by creating a project using a dotent template, as explained below.
+But the preferred way to use it is by creating a project using a dotent template, as explained below.
 
 ## Template
 There is a dotnet template for a base script with the boiler-plate code ready.
