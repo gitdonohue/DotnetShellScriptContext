@@ -10,12 +10,25 @@ A helper library to make dotnet-based shell scripts more elegant.
 - External calls helper (using CliWrap)
 - Parallel/sequential async tasks helpers
 
+
+## Install
+
+The Nuget package (https://www.nuget.org/packages/ShellScriptContext/) can be installed via the following command:
+```
+dotnet add package ShellScriptContext
+```
+But the preferred way to us it is by creating a project using a dotent template, as explained below.
+
 ## Template
 There is a dotnet template for a base script with the boiler-plate code ready.
 The template can be installed by calling (only once):
-```dotnet new install ShellScriptContext.Template```
+```
+dotnet new install ShellScriptContext.Template
+```
 A new script can then be created by calling:
-```dotnet new dotnetscript```.
+```
+dotnet new dotnetscript
+```
 
 ## Usage
 
@@ -83,7 +96,7 @@ using (scriptContext.BeginScope("WorkStuff"))
 }
 ```
 
-## Extrnal Calls
+## External Calls
 The ScriptContext provides Shell() and Exec() methods to start external processes.  The ScriptContext's CancellationToken is passed internally.  Under the hood this uses the CliWrap package (https://github.com/Tyrrrz/CliWrap).
 
 Example:
