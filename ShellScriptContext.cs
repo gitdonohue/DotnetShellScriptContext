@@ -190,10 +190,10 @@ namespace ShellScriptContext
                 => result.CommandResult.ExitCode == 0;
         }
 
-        public Task<ExecResult> Shell(string cmd, bool quiet = false, bool captureOutput = false)
-            => Exec("cmd.exe", "/C " + cmd, quiet, captureOutput);
+        public Task<ExecResult> Shell(string cmd, bool quiet = false, bool captureOutput = false, bool directToConsole = false)
+            => Exec("cmd.exe", "/C " + cmd, quiet, captureOutput, directToConsole);
 
-        public async Task<ExecResult> Exec(string cmd, string args, bool quiet = false, bool captureOutput = false)
+        public async Task<ExecResult> Exec(string cmd, string args, bool quiet = false, bool captureOutput = false, bool directToConsole = false)
         {
             try
             {
@@ -202,8 +202,39 @@ namespace ShellScriptContext
                 var result = await Cli
                     .Wrap(cmd)
                     .WithArguments(args)
-                    .WithStandardOutputPipe(PipeTarget.ToDelegate((msg) => { if (!quiet) this.LogInformation(msg); if (captureOutput) sb.Append(msg); sb.Append('\n'); }))
-                    .WithStandardErrorPipe(PipeTarget.ToDelegate((msg) => { if (!quiet) this.LogWarning(msg); }))
+                    .WithStandardOutputPipe(PipeTarget.ToDelegate((msg) => 
+					{
+						if (!quiet) 
+						{
+							if (directToConsole)
+							{
+								ConsoleStdout.WriteLine(msg);
+							}
+							else
+							{
+								this.LogInformation(msg); 
+							}
+						}
+						if (captureOutput) 
+						{ 
+							sb.Append(msg); 
+							sb.Append('\n'); 
+						} 
+					}))
+                    .WithStandardErrorPipe(PipeTarget.ToDelegate((msg) => 
+					{
+						if (!quiet) 
+						{
+							if (directToConsole)
+							{
+								ConsoleStderr.WriteLine(msg);
+							}
+							else
+							{
+								this.LogWarning(msg); 
+							}
+						}
+					}))
                     .ExecuteAsync(_cts.Token);
 
                 return new ExecResult(result, sb.ToString());
